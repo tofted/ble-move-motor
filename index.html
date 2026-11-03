@@ -5,45 +5,69 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>Buggy Joystick</title>
 <style>
-  :root { --bg:#14171c; --panel:#1e232b; --line:#323a46; --text:#e8ecf1; --dim:#8b95a5; --accent:#3ddc97; --warn:#ff6b6b; }
-  @media (prefers-color-scheme: light) { :root { --bg:#eef1f5; --panel:#fff; --line:#cfd6e0; --text:#1a2029; --dim:#5d6877; --accent:#0a9d63; --warn:#d63a3a; } }
+  :root { --bg:#14171c; --panel:#1e232b; --line:#323a46; --text:#e8ecf1; --dim:#8b95a5; --accent:#3ddc97; --warn:#ffb020; --bad:#ff5c5c; }
+  @media (prefers-color-scheme: light) { :root { --bg:#eef1f5; --panel:#fff; --line:#cfd6e0; --text:#1a2029; --dim:#5d6877; --accent:#0a9d63; --warn:#b36b00; --bad:#d63a3a; } }
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body { margin:0; height:100%; background:var(--bg); color:var(--text); font:16px/1.4 system-ui,sans-serif; overscroll-behavior:none; }
-  body { display:flex; flex-direction:column; align-items:center; gap:14px; padding:16px; user-select:none; -webkit-user-select:none; }
+  html,body { margin:0; min-height:100%; background:var(--bg); color:var(--text); font:16px/1.4 system-ui,sans-serif; overscroll-behavior:none; }
+  body { display:flex; flex-direction:column; align-items:center; gap:12px; padding:14px 16px 28px; user-select:none; -webkit-user-select:none; }
   h1 { font-size:18px; margin:0; font-weight:600; }
   #status { color:var(--dim); font-size:14px; min-height:20px; text-align:center; }
-  #status.ok { color:var(--accent); } #status.bad { color:var(--warn); }
-  button { font:inherit; border:1px solid var(--line); background:var(--panel); color:var(--text); padding:12px 18px; border-radius:10px; }
+  #status.ok { color:var(--accent); } #status.bad { color:var(--bad); }
+  button { font:inherit; border:1px solid var(--line); background:var(--panel); color:var(--text); padding:11px 16px; border-radius:10px; }
   button.primary { background:var(--accent); color:#06150d; border-color:transparent; font-weight:600; }
-  button.stop { background:var(--warn); color:#fff; border-color:transparent; font-weight:700; }
-  #pad { width:min(78vw,320px); aspect-ratio:1; border-radius:50%; background:var(--panel); border:2px solid var(--line); position:relative; touch-action:none; }
+  button.stop { background:var(--bad); color:#fff; border-color:transparent; font-weight:700; }
+  #banner { width:min(92vw,360px); padding:10px 14px; border-radius:10px; font-weight:600; text-align:center; border:1px solid var(--line); background:var(--panel); color:var(--dim); font-size:15px; }
+  #banner.warn { background:var(--warn); color:#1d1300; border-color:transparent; }
+  #banner.slow { background:var(--bad); color:#fff; border-color:transparent; animation:pulse .5s infinite alternate; }
+  @keyframes pulse { to { opacity:.6; } }
+  #pad { width:min(74vw,310px); aspect-ratio:1; border-radius:50%; background:var(--panel); border:2px solid var(--line); position:relative; touch-action:none; }
   #pad::before,#pad::after { content:""; position:absolute; background:var(--line); }
   #pad::before { left:50%; top:8%; bottom:8%; width:1px; } #pad::after { top:50%; left:8%; right:8%; height:1px; }
   #knob { position:absolute; width:34%; aspect-ratio:1; border-radius:50%; background:var(--accent); left:33%; top:33%; box-shadow:0 4px 14px rgba(0,0,0,.35); pointer-events:none; }
-  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; }
-  #read { font-variant-numeric:tabular-nums; color:var(--dim); font-size:14px; }
-  label { color:var(--dim); font-size:14px; } input[type=range] { width:160px; }
+  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  #read { font-variant-numeric:tabular-nums; color:var(--dim); font-size:13px; }
+  label { color:var(--dim); font-size:14px; }
+  input[type=range] { width:150px; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .seg button { border:0; border-radius:0; padding:9px 14px; background:var(--panel); color:var(--dim); }
+  .seg button.on { background:var(--accent); color:#06150d; font-weight:600; }
+  #dist { font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
   <h1>Buggy Joystick</h1>
   <div id="status">Not connected</div>
   <div class="row"><button id="connect" class="primary">Connect micro:bit</button><button id="stop" class="stop">STOP</button></div>
+  <div id="banner">Obstacle sensor: waiting</div>
   <div id="pad"><div id="knob"></div></div>
   <div id="read">x 0 &nbsp; y 0</div>
-  <div class="row"><label for="limit">Top speed</label><input id="limit" type="range" min="10" max="100" value="60"><span id="limitv" class="dim">60</span></div>
+  <div class="row"><label>Turning</label>
+    <div class="seg" id="turn"><button data-v="3">Wide</button><button data-v="2">Standard</button><button data-v="1">Tight</button></div></div>
+  <div class="row"><label for="limit">Top speed</label><input id="limit" type="range" min="10" max="100" value="60"><span id="limitv">60</span></div>
+  <div class="row"><label><input type="checkbox" id="sensor" checked> Obstacle sensor</label><label><input type="checkbox" id="sound" checked> Alert beeps</label></div>
 <script>
 const UART_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-const WRITE_CHAR   = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // the micro:bit's write characteristic
-const SEND_MS = 50;            // 20 messages per second while connected
+const WRITE_CHAR   = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // phone -> micro:bit
+const NOTIFY_CHAR  = "6e400002-b5a3-f393-e0a9-e50e24dcca9e"; // micro:bit -> phone
+const SEND_MS = 50;                       // 20 messages per second
+const EXPO_X = 0.55, EXPO_Y = 0.25;       // 0 = linear, 1 = very soft near the centre
+const RATE = { xUp: 500, xDown: 900, yUp: 220, yDown: 650 };  // stick units per second (100 = full)
 
 const $ = id => document.getElementById(id);
-const pad = $("pad"), knob = $("knob"), statusEl = $("status");
-let x = 0, y = 0, limit = 60, ch = null, dev = null, busy = false, timer = null, pointerId = null;
+const pad = $("pad"), knob = $("knob"), statusEl = $("status"), banner = $("banner");
+let tx = 0, ty = 0, ox = 0, oy = 0;       // target stick (finger) and smoothed output
+let ch = null, dev = null, busy = false, timer = null, pointerId = null;
+let turn = 3, limit = 60, sensor = true, sound = true;
+let dist = 0, prox = 0, rxBuf = "", haveDist = false, lastRx = 0, audio = null, beepAt = 0;
+
+try { const s = JSON.parse(localStorage.getItem("buggy") || "{}");
+  if (s.turn) turn = s.turn; if (s.limit) limit = s.limit; if (s.sensor === false) sensor = false; if (s.sound === false) sound = false; } catch (e) {}
+function save() { try { localStorage.setItem("buggy", JSON.stringify({ turn, limit, sensor, sound })); } catch (e) {} }
 
 function setStatus(t, cls) { statusEl.textContent = t; statusEl.className = cls || ""; }
 
-// Joystick -> x,y in -100..100 (y up = forward), scaled by the speed limit
+// ---- stick ----
+function expo(v, e) { return (1 - e) * v + e * v * v * v; }           // v in -1..1
 function setFromPointer(e) {
   const r = pad.getBoundingClientRect();
   let dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
@@ -51,21 +75,17 @@ function setFromPointer(e) {
   const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; }
   setStick(dx, -dy);
 }
-function setStick(nx, ny) {            // nx, ny in -1..1
-  x = Math.round(nx * limit); y = Math.round(ny * limit);
+function setStick(nx, ny) {
   knob.style.left = (33 + nx * 33) + "%"; knob.style.top = (33 - ny * 33) + "%";
-  $("read").innerHTML = "x " + x + " &nbsp; y " + y;
+  tx = Math.round(expo(nx, EXPO_X) * 100); ty = Math.round(expo(ny, EXPO_Y) * 100);
 }
-function release() { pointerId = null; setStick(0, 0); sendNow(); }
-
+function release() { pointerId = null; setStick(0, 0); }
 pad.addEventListener("pointerdown", e => { pointerId = e.pointerId; pad.setPointerCapture(pointerId); setFromPointer(e); });
 pad.addEventListener("pointermove", e => { if (e.pointerId === pointerId) setFromPointer(e); });
 pad.addEventListener("pointerup", e => { if (e.pointerId === pointerId) release(); });
 pad.addEventListener("pointercancel", release);
-$("limit").addEventListener("input", e => { limit = +e.target.value; $("limitv").textContent = limit; });
-$("stop").addEventListener("click", () => { release(); sendNow(); });
+$("stop").addEventListener("click", () => { release(); ox = oy = 0; send(); });
 
-// Keyboard (desktop): arrows or WASD
 const keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; kb(); });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; kb(); });
@@ -75,28 +95,91 @@ function kb() {
   if (pointerId === null) setStick(nx, ny);
 }
 
-// Send "x,y\n". Drop a frame if the previous write is still pending.
-async function sendNow() {
-  if (!ch || busy) return;
-  busy = true;
-  try { await ch.writeValueWithoutResponse(new TextEncoder().encode(x + "," + y + "\n")); }
-  catch (err) { /* transient: next tick retries */ }
-  busy = false;
+// ---- settings ----
+function paintTurn() { document.querySelectorAll("#turn button").forEach(b => b.classList.toggle("on", +b.dataset.v === turn)); }
+document.querySelectorAll("#turn button").forEach(b => b.addEventListener("click", () => { turn = +b.dataset.v; paintTurn(); save(); }));
+$("limit").value = limit; $("limitv").textContent = limit;
+$("limit").addEventListener("input", e => { limit = +e.target.value; $("limitv").textContent = limit; save(); });
+$("sensor").checked = sensor; $("sensor").addEventListener("change", e => { sensor = e.target.checked; save(); paintBanner(); });
+$("sound").checked = sound; $("sound").addEventListener("change", e => { sound = e.target.checked; save(); });
+paintTurn();
+
+// ---- smoothing: ramp the stick toward the target, gentle up, quicker down ----
+function approach(cur, target, up, down) {
+  const dt = SEND_MS / 1000;
+  const speedingUp = Math.abs(target) > Math.abs(cur) && Math.sign(target) === Math.sign(cur || target);
+  const step = (speedingUp ? up : down) * dt;
+  return Math.abs(target - cur) <= step ? target : cur + Math.sign(target - cur) * step;
 }
 
+// ---- send "x,y,maxSpeed,turn,sensor\n" ----
+async function send() {
+  if (!ch || busy) return;
+  busy = true;
+  try { await ch.writeValueWithoutResponse(new TextEncoder().encode(Math.round(ox) + "," + Math.round(oy) + "," + limit + "," + turn + "," + (sensor ? 1 : 0) + "\n")); }
+  catch (err) { /* transient */ }
+  busy = false;
+}
+function tick() {
+  ox = approach(ox, tx, RATE.xUp, RATE.xDown); oy = approach(oy, ty, RATE.yUp, RATE.yDown);
+  $("read").innerHTML = "x " + Math.round(ox) + " &nbsp; y " + Math.round(oy);
+  send();
+  alertLoop();
+  if (haveDist && Date.now() - lastRx > 2000) { haveDist = false; paintBanner(); }   // sensor data stopped
+}
+
+// ---- obstacle warnings from the micro:bit ("D,<cm>,<state>") ----
+function onData(dv) {
+  rxBuf += new TextDecoder().decode(dv);
+  let i; while ((i = rxBuf.indexOf("\n")) >= 0) { const line = rxBuf.slice(0, i).trim(); rxBuf = rxBuf.slice(i + 1); parse(line); }
+  if (rxBuf.length > 80) rxBuf = "";
+}
+function parse(line) {
+  const p = line.split(",");
+  if (p[0] !== "D" || p.length < 3) return;
+  const d = parseInt(p[1], 10), s = parseInt(p[2], 10);
+  if (isNaN(d) || isNaN(s)) return;
+  const worse = s > prox;
+  dist = d; prox = s; haveDist = true; lastRx = Date.now();
+  if (worse && navigator.vibrate) navigator.vibrate(s === 2 ? [200, 80, 200] : [120]);
+  paintBanner();
+}
+function paintBanner() {
+  banner.className = "";
+  if (!sensor) { banner.textContent = "Obstacle sensor off"; return; }
+  if (!haveDist) { banner.textContent = ch ? "Obstacle sensor: no data" : "Obstacle sensor: waiting"; return; }
+  const cm = dist > 0 ? dist + " cm" : "clear";
+  if (prox === 2) { banner.className = "slow"; banner.textContent = "OBSTACLE " + cm + ". Speed limited to 10"; }
+  else if (prox === 1) { banner.className = "warn"; banner.textContent = "Obstacle ahead " + cm; }
+  else { banner.textContent = "Path clear (" + cm + ")"; }
+}
+function beep(freq, ms) {
+  try { if (!audio) return; const o = audio.createOscillator(), g = audio.createGain();
+    o.frequency.value = freq; g.gain.value = 0.15; o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + ms / 1000); } catch (e) {}
+}
+function alertLoop() {
+  if (!sound || !sensor || !haveDist || prox === 0) return;
+  const now = Date.now(), gap = prox === 2 ? 250 : 700;
+  if (now - beepAt >= gap) { beepAt = now; beep(prox === 2 ? 900 : 600, 90); }
+}
+
+// ---- connect ----
 $("connect").addEventListener("click", async () => {
   if (!navigator.bluetooth) { setStatus("This browser has no Web Bluetooth. Use Chrome (Android/desktop) or Bluefy (iPhone).", "bad"); return; }
   try {
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); if (audio.resume) audio.resume(); } catch (e) {}
     setStatus("Choose your micro:bit...");
     dev = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: [UART_SERVICE] });
-    dev.addEventListener("gattserverdisconnected", () => { ch = null; clearInterval(timer); setStatus("Disconnected", "bad"); $("connect").textContent = "Connect micro:bit"; });
+    dev.addEventListener("gattserverdisconnected", () => { ch = null; clearInterval(timer); haveDist = false; setStatus("Disconnected", "bad"); paintBanner(); $("connect").textContent = "Connect micro:bit"; });
     setStatus("Connecting...");
     const server = await dev.gatt.connect();
     const svc = await server.getPrimaryService(UART_SERVICE);
     ch = await svc.getCharacteristic(WRITE_CHAR);
+    try { const n = await svc.getCharacteristic(NOTIFY_CHAR); n.addEventListener("characteristicvaluechanged", e => onData(e.target.value)); await n.startNotifications(); }
+    catch (e) { /* no distance data, driving still works */ }
     setStatus("Connected to " + (dev.name || "micro:bit"), "ok");
-    $("connect").textContent = "Reconnect";
-    clearInterval(timer); timer = setInterval(sendNow, SEND_MS);
+    $("connect").textContent = "Reconnect"; paintBanner();
+    clearInterval(timer); timer = setInterval(tick, SEND_MS);
   } catch (err) { setStatus("Could not connect: " + err.message, "bad"); }
 });
 </script>

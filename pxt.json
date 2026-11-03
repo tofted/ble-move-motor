@@ -1,0 +1,61 @@
+{
+    "name": "pxt-kitronik-move-motor-ble",
+    "version": "0.4.21",
+    "description": "Kitronik MOVE Motor blocks (Bluetooth-compatible fork for use with My Controller). micro:bit V2.",
+    "license": "MIT",
+    "dependencies": {
+        "core": "*",
+        "microphone": "*",
+        "Kitronik_WS2811": "github:tofted/ble-move-motor#ws2811-ble"
+    },
+    "files": [
+        "main.ts",
+        "README.md",
+        "LightsandSound.md",
+        "UsingUltrasonic.md",
+        "AdvancedDrawingRobot.md",
+        "AdvancedMotorAdjustment.md",
+        "DrawingRobot.md",
+        "LineFollowing.md",
+        "RadioControlRx.md",
+        "RadioControlTx.md",
+        "Klaw.md",
+        "_locales/de/pxt-kitronik-move-motor-jsdoc-strings.json",
+        "_locales/de/pxt-kitronik-move-motor-strings.json",
+
+        "_locales/fr/pxt-kitronik-move-motor-jsodc-strings.json",
+        "_locales/fr/pxt-kitronik-move-motor-strings.json",
+        "_locales/fr/LightsandSound.md",
+
+        "_locales/nl/pxt-kitronik-move-motor-jsdoc-strings.json",
+        "_locales/nl/pxt-kitronik-move-motor-strings.json",
+        "_locales/nl/LightsandSound.md",
+        "_locales/nl/UsingUltrasonic.md",
+        "_locales/nl/DrawingRobot.md",
+        "_locales/nl/LineFollowing.md",
+        "_locales/nl/AdvancedMotorAdjustment.md",
+        "_locales/nl/RadioControlRx.md",
+        "_locales/nl/RadioControlTx.md",
+
+        "_locales/es/pxt-kitronik-move-motor-jsdoc-strings.json",
+        "_locales/es/pxt-kitronik-move-motor-strings.json",
+        "_locales/es/LightsandSound.md",
+        "_locales/es/UsingUltrasonic.md",
+        "_locales/es/DrawingRobot.md",
+        "_locales/es/LineFollowing.md",
+        "_locales/es/AdvancedMotorAdjustment.md",
+        "_locales/es/RadioControlRx.md",
+        "_locales/es/RadioControlTx.md"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "targetVersions": {
+        "target": "4.0.11",
+        "targetId": "microbit"
+    },
+    "supportedTargets": [
+        "microbit"
+    ],
+    "preferredEditor": "tsprj"
+}

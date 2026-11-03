@@ -5,7 +5,7 @@
     "dependencies": {
         "core": "*",
         "my-controller": "github:aorczyk/my-controller#v2.2.8",
-        "pxt-kitronik-move-motor-ble": "github:tofted/ble-move-motor#v0.4.22"
+        "pxt-kitronik-move-motor-ble": "github:tofted/ble-move-motor#master"
     },
     "files": [
         "main.ts"

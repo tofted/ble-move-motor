@@ -2,7 +2,8 @@
 
 Fork of `pxt-kitronik-move-motor` v0.4.20 that works together with the My Controller Bluetooth extension. The WS2811 LED driver is built in (same assembly as upstream, minus the setting that disabled Bluetooth), so there is no second extension to add. Adds `driveMotors(left, right)` for joystick streaming.
 
-**Add in MakeCode** (New Project > Extensions): `https://github.com/aorczyk/my-controller`, then `https://github.com/tofted/ble-move-motor`.
+**Use it (joystick program included):** MakeCode home > **Import** > **Import URL** > `https://github.com/tofted/ble-move-motor`. It opens as a project with Bluetooth already added, "No Pairing Required" preset, and `drive.ts` ready to download. Then open the joystick page (branch `gh-pages`) in Chrome (Android/desktop) or Bluefy (iPhone) and connect.
+**As an extension instead:** Extensions > paste the same URL (it brings in Bluetooth and the pairing setting, but not `drive.ts`).
 Example program and compiled .hex: branch `example`. Investigation notes: `docs/TECHNICAL-NOTES.md`.
 **Status:** compiles for micro:bit V2 with Bluetooth enabled; not yet tested on real hardware.
 

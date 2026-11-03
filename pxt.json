@@ -1,0 +1,14 @@
+{
+    "name": "move-buggy-my-controller",
+    "version": "0.0.1",
+    "description": "Drive a Kitronik :MOVE Motor buggy V3.1 with the My Controller joystick",
+    "dependencies": {
+        "core": "*",
+        "my-controller": "github:aorczyk/my-controller#v2.2.8",
+        "pxt-kitronik-move-motor-ble": "github:tofted/ble-move-motor#move-motor-ble"
+    },
+    "files": [
+        "main.ts"
+    ],
+    "preferredEditor": "tsprj"
+}

@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Buggy Joystick</title>
+<style>
+  :root { --bg:#14171c; --panel:#1e232b; --line:#323a46; --text:#e8ecf1; --dim:#8b95a5; --accent:#3ddc97; --warn:#ff6b6b; }
+  @media (prefers-color-scheme: light) { :root { --bg:#eef1f5; --panel:#fff; --line:#cfd6e0; --text:#1a2029; --dim:#5d6877; --accent:#0a9d63; --warn:#d63a3a; } }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { margin:0; height:100%; background:var(--bg); color:var(--text); font:16px/1.4 system-ui,sans-serif; overscroll-behavior:none; }
+  body { display:flex; flex-direction:column; align-items:center; gap:14px; padding:16px; user-select:none; -webkit-user-select:none; }
+  h1 { font-size:18px; margin:0; font-weight:600; }
+  #status { color:var(--dim); font-size:14px; min-height:20px; text-align:center; }
+  #status.ok { color:var(--accent); } #status.bad { color:var(--warn); }
+  button { font:inherit; border:1px solid var(--line); background:var(--panel); color:var(--text); padding:12px 18px; border-radius:10px; }
+  button.primary { background:var(--accent); color:#06150d; border-color:transparent; font-weight:600; }
+  button.stop { background:var(--warn); color:#fff; border-color:transparent; font-weight:700; }
+  #pad { width:min(78vw,320px); aspect-ratio:1; border-radius:50%; background:var(--panel); border:2px solid var(--line); position:relative; touch-action:none; }
+  #pad::before,#pad::after { content:""; position:absolute; background:var(--line); }
+  #pad::before { left:50%; top:8%; bottom:8%; width:1px; } #pad::after { top:50%; left:8%; right:8%; height:1px; }
+  #knob { position:absolute; width:34%; aspect-ratio:1; border-radius:50%; background:var(--accent); left:33%; top:33%; box-shadow:0 4px 14px rgba(0,0,0,.35); pointer-events:none; }
+  .row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  #read { font-variant-numeric:tabular-nums; color:var(--dim); font-size:14px; }
+  label { color:var(--dim); font-size:14px; } input[type=range] { width:160px; }
+</style>
+</head>
+<body>
+  <h1>Buggy Joystick</h1>
+  <div id="status">Not connected</div>
+  <div class="row"><button id="connect" class="primary">Connect micro:bit</button><button id="stop" class="stop">STOP</button></div>
+  <div id="pad"><div id="knob"></div></div>
+  <div id="read">x 0 &nbsp; y 0</div>
+  <div class="row"><label for="limit">Top speed</label><input id="limit" type="range" min="10" max="100" value="60"><span id="limitv" class="dim">60</span></div>
+<script>
+const UART_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const WRITE_CHAR   = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"; // the micro:bit's write characteristic
+const SEND_MS = 50;            // 20 messages per second while connected
+
+const $ = id => document.getElementById(id);
+const pad = $("pad"), knob = $("knob"), statusEl = $("status");
+let x = 0, y = 0, limit = 60, ch = null, dev = null, busy = false, timer = null, pointerId = null;
+
+function setStatus(t, cls) { statusEl.textContent = t; statusEl.className = cls || ""; }
+
+// Joystick -> x,y in -100..100 (y up = forward), scaled by the speed limit
+function setFromPointer(e) {
+  const r = pad.getBoundingClientRect();
+  let dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+  let dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+  const m = Math.hypot(dx, dy); if (m > 1) { dx /= m; dy /= m; }
+  setStick(dx, -dy);
+}
+function setStick(nx, ny) {            // nx, ny in -1..1
+  x = Math.round(nx * limit); y = Math.round(ny * limit);
+  knob.style.left = (33 + nx * 33) + "%"; knob.style.top = (33 - ny * 33) + "%";
+  $("read").innerHTML = "x " + x + " &nbsp; y " + y;
+}
+function release() { pointerId = null; setStick(0, 0); sendNow(); }
+
+pad.addEventListener("pointerdown", e => { pointerId = e.pointerId; pad.setPointerCapture(pointerId); setFromPointer(e); });
+pad.addEventListener("pointermove", e => { if (e.pointerId === pointerId) setFromPointer(e); });
+pad.addEventListener("pointerup", e => { if (e.pointerId === pointerId) release(); });
+pad.addEventListener("pointercancel", release);
+$("limit").addEventListener("input", e => { limit = +e.target.value; $("limitv").textContent = limit; });
+$("stop").addEventListener("click", () => { release(); sendNow(); });
+
+// Keyboard (desktop): arrows or WASD
+const keys = {};
+addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; kb(); });
+addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; kb(); });
+function kb() {
+  const nx = (keys["arrowright"]||keys["d"] ? 1 : 0) - (keys["arrowleft"]||keys["a"] ? 1 : 0);
+  const ny = (keys["arrowup"]||keys["w"] ? 1 : 0) - (keys["arrowdown"]||keys["s"] ? 1 : 0);
+  if (pointerId === null) setStick(nx, ny);
+}
+
+// Send "x,y\n". Drop a frame if the previous write is still pending.
+async function sendNow() {
+  if (!ch || busy) return;
+  busy = true;
+  try { await ch.writeValueWithoutResponse(new TextEncoder().encode(x + "," + y + "\n")); }
+  catch (err) { /* transient: next tick retries */ }
+  busy = false;
+}
+
+$("connect").addEventListener("click", async () => {
+  if (!navigator.bluetooth) { setStatus("This browser has no Web Bluetooth. Use Chrome (Android/desktop) or Bluefy (iPhone).", "bad"); return; }
+  try {
+    setStatus("Choose your micro:bit...");
+    dev = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: [UART_SERVICE] });
+    dev.addEventListener("gattserverdisconnected", () => { ch = null; clearInterval(timer); setStatus("Disconnected", "bad"); $("connect").textContent = "Connect micro:bit"; });
+    setStatus("Connecting...");
+    const server = await dev.gatt.connect();
+    const svc = await server.getPrimaryService(UART_SERVICE);
+    ch = await svc.getCharacteristic(WRITE_CHAR);
+    setStatus("Connected to " + (dev.name || "micro:bit"), "ok");
+    $("connect").textContent = "Reconnect";
+    clearInterval(timer); timer = setInterval(sendNow, SEND_MS);
+  } catch (err) { setStatus("Could not connect: " + err.message, "bad"); }
+});
+</script>
+</body>
+</html>

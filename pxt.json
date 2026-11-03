@@ -1,0 +1,23 @@
+{
+    "name": "pxt-kitronik-ws2811-ble",
+    "version": "0.0.3",
+    "description": "Kitronik WS2811 driver (Bluetooth-compatible fork). Same API as pxt-kitronik-ws2811, without disabling Bluetooth. micro:bit V2.",
+    "license": "MIT",
+    "dependencies": {
+        "core": "*"
+    },
+    "files": [
+        "README.md",
+        "main.ts",
+        "sendBuffer.asm",
+        "setBufferMode.asm"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "public": true,
+    "supportedTargets": [
+        "microbit"
+    ],
+    "preferredEditor": "tsprj"
+}

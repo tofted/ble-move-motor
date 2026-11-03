@@ -1,10 +1,11 @@
 {
     "name": "pxt-kitronik-move-motor-ble",
-    "version": "0.4.23",
+    "version": "0.4.24",
     "description": "Kitronik MOVE Motor blocks (Bluetooth-compatible fork for use with My Controller). micro:bit V2.",
     "license": "MIT",
     "dependencies": {
-        "core": "*"
+        "core": "*",
+        "bluetooth": "*"
     },
     "files": [
         "main.ts",
@@ -46,7 +47,8 @@
         "_locales/es/RadioControlTx.md"
     ],
     "testFiles": [
-        "test.ts"
+        "test.ts",
+        "drive.ts"
     ],
     "targetVersions": {
         "target": "4.0.11",

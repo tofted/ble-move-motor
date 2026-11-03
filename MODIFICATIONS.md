@@ -11,3 +11,4 @@
 ZIP LEDs, sensors (ultrasonic, line following), sounds, pins and all motor blocks are retained.
 
 - v0.4.23: removed the Sounds blocks (beep horn, siren) and the microphone dependency to test whether music/sound code crashes Bluetooth (panic 070).
+- v0.4.24: added drive.ts (Bluetooth UART joystick program) as a testFile: it loads when this repo is opened as a project (Import URL) and is NOT included when the repo is used as an extension. Added the bluetooth dependency.

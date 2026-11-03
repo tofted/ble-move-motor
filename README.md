@@ -1,6 +1,6 @@
 # Kitronik :MOVE Motor V3.1 + My Controller (Bluetooth fork)
 
-Fork of `pxt-kitronik-move-motor` v0.4.20 that works together with the My Controller Bluetooth extension. Pulls in a WS2811 fork (branch `ws2811-ble`) that no longer disables Bluetooth. Adds `driveMotors(left, right)` for joystick streaming.
+Fork of `pxt-kitronik-move-motor` v0.4.20 that works together with the My Controller Bluetooth extension. The WS2811 LED driver is built in (same assembly as upstream, minus the setting that disabled Bluetooth), so there is no second extension to add. Adds `driveMotors(left, right)` for joystick streaming.
 
 **Add in MakeCode** (New Project > Extensions): `https://github.com/aorczyk/my-controller`, then `https://github.com/tofted/ble-move-motor`.
 Example program and compiled .hex: branch `example`. Investigation notes: `docs/TECHNICAL-NOTES.md`.

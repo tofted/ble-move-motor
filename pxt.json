@@ -1,15 +1,17 @@
 {
     "name": "pxt-kitronik-move-motor-ble",
-    "version": "0.4.21",
+    "version": "0.4.22",
     "description": "Kitronik MOVE Motor blocks (Bluetooth-compatible fork for use with My Controller). micro:bit V2.",
     "license": "MIT",
     "dependencies": {
         "core": "*",
-        "microphone": "*",
-        "Kitronik_WS2811": "github:tofted/ble-move-motor#ws2811-ble"
+        "microphone": "*"
     },
     "files": [
         "main.ts",
+        "ws2811.ts",
+        "sendBuffer.asm",
+        "setBufferMode.asm",
         "README.md",
         "LightsandSound.md",
         "UsingUltrasonic.md",
@@ -22,11 +24,9 @@
         "Klaw.md",
         "_locales/de/pxt-kitronik-move-motor-jsdoc-strings.json",
         "_locales/de/pxt-kitronik-move-motor-strings.json",
-
         "_locales/fr/pxt-kitronik-move-motor-jsodc-strings.json",
         "_locales/fr/pxt-kitronik-move-motor-strings.json",
         "_locales/fr/LightsandSound.md",
-
         "_locales/nl/pxt-kitronik-move-motor-jsdoc-strings.json",
         "_locales/nl/pxt-kitronik-move-motor-strings.json",
         "_locales/nl/LightsandSound.md",
@@ -36,7 +36,6 @@
         "_locales/nl/AdvancedMotorAdjustment.md",
         "_locales/nl/RadioControlRx.md",
         "_locales/nl/RadioControlTx.md",
-
         "_locales/es/pxt-kitronik-move-motor-jsdoc-strings.json",
         "_locales/es/pxt-kitronik-move-motor-strings.json",
         "_locales/es/LightsandSound.md",
@@ -57,5 +56,6 @@
     "supportedTargets": [
         "microbit"
     ],
-    "preferredEditor": "tsprj"
+    "preferredEditor": "tsprj",
+    "public": true
 }

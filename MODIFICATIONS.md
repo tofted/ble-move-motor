@@ -9,3 +9,5 @@
 | everything else (`main.cpp`, `enums.d.ts`, `shims.d.ts`, docs, locales, assets) | Unchanged. |
 
 ZIP LEDs, sensors (ultrasonic, line following), sounds, pins and all motor blocks are retained.
+
+- v0.4.23: removed the Sounds blocks (beep horn, siren) and the microphone dependency to test whether music/sound code crashes Bluetooth (panic 070).

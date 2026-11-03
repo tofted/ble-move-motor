@@ -1184,50 +1184,6 @@ namespace Kitronik_Move_Motor {
         }
     }
 
-    //////////////
-    //  SOUNDS  //
-    //////////////
-
-    /**
-     * Beep horn 
-     */
-    //% subcategory=Sounds
-    //% blockId=kitronik_move_motor_horn
-    //% weight=95 blockGap=8
-    //%block="beep the horn"
-    export function beepHorn(): void {
-            music.playTone(185, music.beat(BeatFraction.Quarter))
-            basic.pause(75)
-    }
-
-    /**
-    * Turns on and off the siren that plays in the background.
-    * @param OnOffSelection which selects the status of the siren being on or off
-    */
-    //% subcategory=Sounds
-    //% blockId=kitronik_move_motor_siren
-    //% weight=90 blockGap=8
-    //% block="turn siren %siren"
-    export function soundSiren(siren: OnOffSelection): void {
-        if (siren == OnOffSelection.On) {
-            sirenOn = true
-            control.inBackground(() => {
-            while (sirenOn) {
-                music.playTone(370, music.beat(BeatFraction.Half))
-                basic.pause(75)
-                music.playTone(262, music.beat(BeatFraction.Half))
-                basic.pause(75)
-            }
-
-        })
-        }
-        else {
-            sirenOn = false
-            music.stopMelody(MelodyStopOptions.Background)
-        }
-    }
-    
-    
     ////////////////////
     //  SERVO & PINS  //
     ////////////////////
